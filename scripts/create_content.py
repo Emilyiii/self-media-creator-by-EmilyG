@@ -781,7 +781,8 @@ class SelfMediaCreator:
 
 def main():
     parser = argparse.ArgumentParser(description="自媒体内容创作 Agent - 8阶段完整工作流")
-    parser.add_argument("--topic", "-t", required=True, help="文章主题")
+    parser.add_argument("--topic", "-t", help="文章主题（直接指定）")
+    parser.add_argument("--topic-file", "-f", help="从JSON文件读取选题（由generate_topics.py生成）")
     parser.add_argument("--platform", "-p", default="wechat",
                        choices=["wechat", "xiaohongshu"], help="发布平台")
     parser.add_argument("--style", "-s", default="professional",
@@ -790,6 +791,21 @@ def main():
     parser.add_argument("--notify", "-n", action="store_true", help="完成后发送通知")
     
     args = parser.parse_args()
+    
+    # 支持从文件读取选题
+    if args.topic_file:
+        with open(args.topic_file, 'r', encoding='utf-8') as f:
+            topic_data = json.load(f)
+        topic = topic_data.get('selected_topic', topic_data.get('title', ''))
+        # 可以从文件中覆盖平台设置
+        if 'platform' in topic_data and not args.platform:
+            args.platform = topic_data['platform']
+        print(f"📂 从文件加载选题: {args.topic_file}")
+        print(f"📝 选定主题: {topic}")
+    elif args.topic:
+        topic = args.topic
+    else:
+        parser.error("必须提供 --topic 或 --topic-file 参数之一")
     
     print("="*60)
     print("🚀 自媒体内容创作 Agent 启动")
@@ -801,7 +817,7 @@ def main():
     )
     
     result = creator.create(
-        topic=args.topic,
+        topic=topic,
         max_images=args.max_images,
         notify=args.notify
     )

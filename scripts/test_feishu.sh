@@ -29,35 +29,14 @@ if [ -z "$FEISHU_WEBHOOK" ]; then
 fi
 
 echo "✅ 已找到 Webhook 配置"
-echo "📍 URL: ${FEISHU_WEBHOOK:0:50}..."
 echo ""
 
 # 构建测试消息
-TEST_MESSAGE=$(cat <<EOF
-🤖 **飞书机器人测试**
+TIME=$(date '+%Y-%m-%d %H:%M:%S')
 
-这是一条测试消息，如果您看到了，说明配置成功！
-
-⏰ 时间：$(date '+%Y-%m-%d %H:%M:%S')
-📁 项目：自媒体创作 Agent
-✅ 状态：配置正常
-
-明天 8:30 将开始自动生成选题～
-EOF
-)
-
-# 发送测试消息
 echo "📤 正在发送测试消息..."
 
-JSON_PAYLOAD=$(cat <<EOF
-{
-    "msg_type": "text",
-    "content": {
-        "text": "${TEST_MESSAGE}"
-    }
-}
-EOF
-)
+JSON_PAYLOAD='{"msg_type":"text","content":{"text":"🤖 **飞书机器人测试**\n\n这是一条测试消息，如果您看到了，说明配置成功！\n\n⏰ 时间：'$TIME'\n📁 项目：自媒体创作 Agent\n✅ 状态：配置正常\n\n明天 8:30 将开始自动生成选题～"}}'
 
 RESPONSE=$(curl -s -X POST \
     -H "Content-Type: application/json" \

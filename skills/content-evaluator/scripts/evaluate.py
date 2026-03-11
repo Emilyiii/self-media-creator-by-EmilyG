@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Content Evaluator - Main evaluation script
-Multi-dimensional content quality assessment
+Multi-dimensional content quality assessment with fact checking
 """
 
 import argparse
@@ -10,6 +10,10 @@ import re
 import sys
 from pathlib import Path
 from typing import List, Dict, Tuple
+
+# Import fact checker
+sys.path.insert(0, str(Path(__file__).parent))
+from fact_checker import FactChecker, FactStatus
 
 
 # Default scoring configuration
@@ -24,6 +28,11 @@ DEFAULT_CONFIG = {
     "platform_thresholds": {
         "wechat": 90,
         "xiaohongshu": 85
+    },
+    "fact_check": {
+        "enabled": True,
+        "strict_mode": True,  # 严格模式：有编造内容直接不通过
+        "min_verified_ratio": 0.5  # 至少50%的声明需要可验证
     }
 }
 
@@ -53,6 +62,36 @@ class ContentEvaluator:
         score = 30
         issues = []
         
+        # === NEW: Fact Checking ===
+        fact_config = self.config.get("fact_check", {"enabled": True})
+        if fact_config.get("enabled", True):
+            fact_checker = FactChecker()
+            fact_report = fact_checker.generate_report(content)
+            
+            # Deduct points for fact issues
+            if fact_report["status"] == "critical":
+                score -= 15  # 严重问题扣15分
+                issues.append({
+                    "type": "fact_check",
+                    "severity": "error",
+                    "description": f"发现{fact_report['summary']['fabricated']}处疑似编造内容",
+                    "suggestion": "删除编造内容，替换为可验证的事实"
+                })
+            elif fact_report["status"] == "warning":
+                score -= 8
+                issues.append({
+                    "type": "fact_check",
+                    "severity": "warning",
+                    "description": f"{fact_report['summary']['unverified']}处声明无法验证",
+                    "suggestion": "为数据/引用添加可信来源"
+                })
+            
+            # Add detailed fact issues
+            for fact_issue in fact_report["issues"]:
+                if fact_issue.get("type") == "fact_check":
+                    issues.append(fact_issue)
+        
+        # === Original content checks ===
         # Check for generic statements
         generic_patterns = [
             r"many people",
@@ -70,27 +109,6 @@ class ContentEvaluator:
                 "description": f"发现{generic_count}处通用表述，建议添加具体案例",
                 "suggestion": "用具体数据或个人经历替换通用表述"
             })
-        
-        # Check for source-less claims (simplified)
-        claim_patterns = [
-            r"\d+%",
-            r"研究表明",
-            r"数据显示"
-        ]
-        for pattern in claim_patterns:
-            matches = re.finditer(pattern, content)
-            for match in matches:
-                # Check if followed by source
-                context = content[max(0, match.start()-20):min(len(content), match.end()+50)]
-                if not re.search(r'(据|来自|来源|年)', context):
-                    score -= 1
-                    issues.append({
-                        "type": "content",
-                        "severity": "warning",
-                        "description": f"数据/结论缺少来源: {match.group()}",
-                        "suggestion": "添加数据来源或改为定性描述"
-                    })
-                    break  # Limit to one issue per type
         
         # Check depth (simplified - word count proxy)
         if len(content) < 500:

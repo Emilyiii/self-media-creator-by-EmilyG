@@ -17,15 +17,25 @@ This skill assesses content across four key dimensions: content quality, structu
 
 | Sub-dimension | Points | Criteria |
 |--------------|--------|----------|
-| Accuracy | 10 | Facts are verifiable, no suspicious claims |
-| Depth | 10 | Analysis goes beyond surface level |
-| Originality | 10 | Unique insights, not generic advice |
+| **Accuracy** | 10 | Facts are verifiable, no suspicious claims |
+| **Fact Check** | 10 | No fabricated data, sources are credible |
+| **Depth** | 5 | Analysis goes beyond surface level |
+| **Originality** | 5 | Unique insights, not generic advice |
+
+**Fact Checking (NEW):**
+- Extracts statistical claims, citations, events, trends
+- Verifies against trusted source database (Tier 1-3)
+- Flags fabricated academic/institution references
+- Detects red flag phrases (震惊, 重磅, 99%的人不知道...)
+- **Critical**: Fabricated facts deduct 15 points, auto-fail in strict mode
+- **Warning**: Unverified claims deduct 8 points
 
 **Detection:**
 - Claims without sources
 - Generic statements
 - Surface-level analysis
 - Clichés and platitudes
+- **Fabricated data/references (NEW)**
 
 ### 2. Structure Quality (25 points)
 
@@ -85,6 +95,40 @@ Scan for:
 - **Sensitive content** (check against word lists)
 - **Repetition** (similar sentences/paragraphs)
 - **Logical gaps** (missing connections)
+- **Fabricated data** (NEW: verify against trusted sources)
+- **Red flag phrases** (NEW: sensational/exaggerated language)
+
+### Fact Checking Process (NEW)
+
+```
+文本内容
+    ↓
+提取声明 (统计/引用/事件/趋势)
+    ↓
+验证来源可信度
+    ├── Tier 1 (9-10分): 学术论文、官方博客
+    ├── Tier 2 (7-8分): 权威媒体、知名智库
+    ├── Tier 3 (5-6分): 行业媒体、技术社区
+    └── 未验证来源: 标记为待核实
+    ↓
+检测编造迹象
+    ├── 编造学术机构引用
+    ├── 编造咨询公司报告
+    └── 无法验证的数据
+    ↓
+生成事实检查报告
+```
+
+**Trusted Sources Database:**
+- **Tier 1**: arxiv.org, nature.com, openai.com, deepmind.com, github.com
+- **Tier 2**: reuters.com, techcrunch.com, 36kr.com, pingwest.com
+- **Tier 3**: csdn.net, juejin.cn, zhihu.com
+
+**Red Flags (自动标记):**
+- 震惊、重磅、炸裂、颠覆、革命
+- 99%的人不知道
+- 绝对、永远、一定
+- 据说、听说、传闻
 
 ### Step 3: Dimension Scoring
 
@@ -183,9 +227,19 @@ Output includes:
 
 ### Issue Severity Levels
 
+- **Critical**: Must fix (fabricated facts, false citations)
 - **Error**: Must fix (factual errors, platform violations)
-- **Warning**: Should fix (logical gaps, weak expression)
+- **Warning**: Should fix (unverified claims, logical gaps, weak expression)
 - **Suggestion**: Could improve (minor style issues)
+
+### Fact Check Verdicts
+
+| Status | Description | Action Required |
+|--------|-------------|-----------------|
+| ✅ Verified | 来源可信，数据可验证 | 无需修改 |
+| ⚠️ Unverified | 无法验证或来源不明 | 添加可信来源或删除 |
+| 🚫 Fabricated | 疑似编造数据/引用 | 必须删除或替换 |
+| ⛔ Disputed | 存在争议或过时 | 添加多方视角或更新数据 |
 
 ## Resources
 

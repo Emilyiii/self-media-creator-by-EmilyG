@@ -3,7 +3,13 @@
 
 PROJECT_DIR="/home/emilyg/emilygclaws/openclaw-workspace/self-media-creator"
 LOG_FILE="/tmp/self-media-creator-cron.log"
-FEISHU_WEBHOOK="${FEISHU_WEBHOOK_URL:-}"  # 从环境变量读取
+
+# 加载配置文件
+if [ -f "$PROJECT_DIR/config/.env.feishu" ]; then
+    source "$PROJECT_DIR/config/.env.feishu"
+fi
+
+FEISHU_WEBHOOK="${FEISHU_WEBHOOK_URL:-}"  # 从环境变量或配置文件读取
 
 # 内容方向（可以配置多个，每天轮换）
 DIRECTIONS=("AI工具" "效率提升" "自媒体运营")

@@ -580,6 +580,8 @@ class HumanizeWritingSkill:
     
     def _write_wechat_article(self, topic: str, research_data: Dict, style: str) -> str:
         """写公众号风格文章 - 增强深度和个人化"""
+        if self._should_use_learning_focus(topic):
+            return self._write_learning_article(topic, style)
         findings = research_data.get("findings", [])
         core_topic = research_data.get("core_topic", topic)
         
@@ -707,6 +709,62 @@ class HumanizeWritingSkill:
         
         return "\n".join(sections)
     
+    def _should_use_learning_focus(self, topic: str) -> bool:
+        normalized = re.sub(r'\s+', '', topic).lower()
+        return '快速学习' in normalized and 'ai' in normalized
+
+    def _write_learning_article(self, topic: str, style: str) -> str:
+        sections = []
+        sections.append(f"# {topic}")
+        sections.append("")
+        if style == 'casual':
+            intro = """说实话，普通人想在碎片时间里用AI快速学大量东西，
+听起来像天方夜谭，但只要把目标讲清楚，AI就能变成你的学习伙伴。
+这一份指南不是让你追趋势，而是帮你把好奇心、提示词和复盘这三件事串起来。"""
+        else:
+            intro = """从我的观察来看，要让普通人掌握用AI快速吸收知识，
+第一步是把问题讲清楚，第二步是让AI带着结构帮你回顾，
+这篇文章就是围绕这三条核心逻辑写出来的。"""
+        sections.append(intro.strip())
+        sections.append("")
+        sections.append("## 任何好奇的问题都可以问")
+        sections.append("")
+        sections.append("""没有人会因为你问题太简单就让你下线。
+如果你真想搞懂一个概念，就把它拆成一句完整提问：比如说'为什么我记不住这个技巧？'或'这个方法可以用于哪些场景？'。
+AI的任务就是不断问你，直到它确认你的疑惑在哪里。
+问的过程还能顺便整理自己脑袋里的碎片，'什么是核心、什么是例子'这类清单可以边问边补。""")
+        sections.append("""- 先说出你的场景和目的
+- 列出想知道的细节和你已经掌握的部分
+- 让AI反馈它理解到的重点
+- 不懂的就继续追问""")
+        sections.append("")
+        sections.append("## 提示词要注意的技巧")
+        sections.append("")
+        sections.append("""提示词不是越长越好，而是逻辑清晰。
+每次开启新话题，先让AI扮演你的'私人知识教练'，再给它三个维度：我是谁、我想学什么、我希望怎么复习。""")
+        sections.append("""- 用最低门槛的语言写出需求：'我是一名普通上班族，想快速掌握xxx'
+- 借助'分步拆解'提示词，让AI先帮你列大纲再深入
+- 要求对方给出'连贯的举例'或'类比'，不要只有笼统结论
+- 如果需要操作型技能，指明使用的工具、具体步骤、时间成本""")
+        sections.append("")
+        sections.append("## 学完后让AI总结刚刚聊了什么，便于快速回顾")
+        sections.append("")
+        sections.append("""聊完一轮，关键不是立刻关掉窗口，而是让AI帮你整理三件事：
+1）刚才学到的核心概念；2）哪些问题还没搞清楚；3）下一步可以尝试的练习。
+把这个总结存下来，第二天再打开，一样能迅速回血。""")
+        sections.append("""- 让AI生成'5分钟复盘'、'关键词提示卡'或'明日复习清单'
+- 如果你是视觉学习者，让它把重点抽成表格或编号
+- 写下'3句我要记住的话'，并请AI在最后加一句鼓励""")
+        sections.append("")
+        sections.append("## 结语")
+        sections.append("")
+        sections.append("""普通人用AI学知识，关键不是追求那些看起来很高大上的案例，
+而是天天问问题、调整提示词、做即时回顾。
+把这三个动作当成一个小循环，你会发现那些看似遥远的大量知识，
+其实可以一点点吸收。
+欢迎你随时在评论里告诉我你的提问方式，我最喜欢听你们的学习故事。""")
+        return '\n'.join(sections)
+
     def _write_xiaohongshu_article(self, topic: str, research_data: Dict, style: str) -> str:
         """写小红书风格文章"""
         findings = research_data.get("findings", [])

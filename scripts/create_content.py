@@ -2049,6 +2049,10 @@ class SelfMediaCreator:
     自媒体创作 Agent 主类
     协调8个Phase的完整工作流
     """
+
+    REQUIRED_PRE_DELIVERY_STAGES = ["research", "draft", "humanized", "evaluation", "formatted"]
+    FORBIDDEN_FORMAT_TERMS = ["排版设计说明", "设计备注", "风格：", "风格:", "配色：", "配色:", "视觉层级"]
+    TITLE_SIMILARITY_THRESHOLD = 0.3
     
     def __init__(self, platform: str = "wechat", style: str = "professional"):
         self.platform = platform
@@ -2225,7 +2229,8 @@ class SelfMediaCreator:
         Logger.phase(7, "排版格式化")
         formatted_content = self.formatter_skill.format(humanized, images, self.platform)
         self.workflow_state["formatted"] = formatted_content
-        self._persist_artifact("formatted", formatted_content, "md")
+        formatted_path = self._persist_artifact("formatted", formatted_content, "md")
+        self._pre_delivery_validation(selected_topic, formatted_content, formatted_path)
         
         # Phase 8: 交付
         Logger.phase(8, "交付输出")
@@ -2314,6 +2319,58 @@ class SelfMediaCreator:
                 break
         
         return enhanced
+    
+    def _pre_delivery_validation(self, topic: str, formatted_content: str, formatted_path: Optional[Path]):
+        """执行交付前校验，发现问题则抛出异常"""
+        errors = []
+        run_id = self.workflow_state.get('run_id') or (self.current_run_meta or {}).get('run_id', '')
+        intermediates = self.workflow_state.get('intermediates', {})
+        missing_stages = [stage for stage in self.REQUIRED_PRE_DELIVERY_STAGES if not intermediates.get(stage)]
+        if missing_stages:
+            errors.append(f"缺失中间产物: {', '.join(missing_stages)}")
+        formatted_path_str = str(formatted_path or intermediates.get('formatted', ''))
+        if run_id and run_id not in formatted_path_str:
+            errors.append("formatted 文件未输出到当前 run_id 目录")
+        if not self._is_title_similar(topic, formatted_content):
+            errors.append("文章标题与输入选题不匹配")
+        forbidden_terms = [term for term in self.FORBIDDEN_FORMAT_TERMS if term in formatted_content]
+        if forbidden_terms:
+            errors.append(f"格式化内容包含内部说明: {', '.join(forbidden_terms)}")
+        if errors:
+            message = "; ".join(errors)
+            Logger.error(f"交付前校验失败: {message}")
+            raise RuntimeError(message)
+        Logger.info("交付前校验通过")
+    
+    def _is_title_similar(self, topic: str, formatted_content: str) -> bool:
+        title = self._extract_title_from_formatted(formatted_content)
+        if not title:
+            return False
+        topic_norm = self._normalize_text(topic)
+        title_norm = self._normalize_text(title)
+        if topic_norm and title_norm and (topic_norm in title_norm or title_norm in topic_norm):
+            return True
+        topic_tokens = self._tokenize(topic)
+        title_tokens = self._tokenize(title)
+        if not topic_tokens or not title_tokens:
+            return False
+        overlap = topic_tokens & title_tokens
+        ratio = len(overlap) / max(len(topic_tokens), len(title_tokens))
+        return ratio >= self.TITLE_SIMILARITY_THRESHOLD
+    
+    def _extract_title_from_formatted(self, content: str) -> str:
+        match = re.search(r'^#\s*(.+)', content, re.MULTILINE)
+        return match.group(1).strip() if match else ''
+    
+    def _normalize_text(self, text: str) -> str:
+        normalized = text.lower()
+        normalized = re.sub(r'\s+', '', normalized)
+        normalized = re.sub(r'[^0-9a-zA-Z\u4e00-\u9fff]', '', normalized)
+        return normalized
+    
+    def _tokenize(self, text: str) -> set:
+        tokens = re.findall(r'[\u4e00-\u9fa5]{2,}|[A-Za-z0-9]+', text)
+        return {token.lower() for token in tokens}
     
     def _deliver(self, topic: str, content: str, images: List[Dict], evaluation: Dict, run_meta: Dict[str, Any]) -> Dict:
         """Phase 8: 交付输出"""

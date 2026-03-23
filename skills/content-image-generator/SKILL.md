@@ -27,13 +27,25 @@ For each planned image, design:
 - **Layout**: Composition (centered, split-screen, full-width, etc.)
 - **Style**: Art direction (flat illustration, 3D render, photography, etc.)
 
-### Step 3: Generate Prompts
+### Step 3: Generate Prompts (双语版本)
 
-Create detailed prompts for image generation. See [references/prompt-guide.md](references/prompt-guide.md) for prompt engineering best practices.
+Create detailed prompts for image generation. **必须同时生成英文和中文两个版本**。
 
-Prompt structure:
+Prompt结构：
 ```
 [Subject] + [Scene/Environment] + [Style] + [Composition] + [Lighting/Mood] + [Technical specs]
+```
+
+**双语Prompt要求：**
+- **英文版 (prompt_en)**: 用于Seedream、DALL-E、Midjourney等AI绘图工具
+- **中文版 (prompt_zh)**: 用于即梦、文心一格等中文AI绘图工具，或作为用户参考
+
+**示例：**
+```json
+{
+  "prompt_en": "modern flat illustration, AI technology concept, neural networks, clean design, bright gradient colors, professional, 16:9 aspect ratio, high quality",
+  "prompt_zh": "现代扁平插画风格，AI科技概念，神经网络，简洁设计，明亮渐变色，专业感，16:9比例，高质量"
+}
 ```
 
 ### Step 4: Generate Images
@@ -111,7 +123,10 @@ This skill is designed to be called by a parent agent (e.g.,公众号创作 Agen
     {
       "file_path": "./article_images/cover.png",
       "position": "after_title",
-      "description": "封面图：AI工具概念插画"
+      "description": "封面图：AI工具概念插画",
+      "prompt": "modern flat illustration, AI technology concept...",
+      "prompt_en": "modern flat illustration, AI technology concept, neural networks, clean design, bright gradient colors, professional, 16:9 aspect ratio",
+      "prompt_zh": "现代扁平插画风格，AI科技概念，神经网络，简洁设计，明亮渐变色，专业感，16:9比例"
     }
   ],
   "total_cost": "0.8元"

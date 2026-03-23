@@ -38,3 +38,9 @@
 ### 阶段 3：最小闭环
 - 方向输入 → 选题 → 用户选择 → 初稿 → 用户反馈 → 终稿润色 → 排版交付
 - 先不追求全自动，先追求协作顺畅、结果稳定
+
+
+## 新增进展（2026-03-23）
+- 已新增 `topic-planning`、`draft-writing`、`final-polish` 技能骨架
+- 已完成第一轮 Skill 审计：`docs/skill-audit-20260323.md`
+- 已将 `humanize-writing` 迁移为 `final-polish`

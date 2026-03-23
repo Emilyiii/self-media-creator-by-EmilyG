@@ -1,77 +1,18 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
-venv/
-ENV/
-env/
-.venv
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Environment Variables
-.env
-.env.local
-.env.*.local
+# env
 config/.env.feishu
 
-# Output Directory
+# python
+__pycache__/
+*.pyc
+
+# generated outputs
 output/*
 !output/.gitkeep
+!output/daily_topics/
+output/daily_topics/*
+!output/daily_topics/.gitkeep
 
-# Logs
-*.log
-logs/
-
-# Temporary Files
-tmp/
-temp/
+# local test/temporary files
+*.backup
+*.bak
 *.tmp
-
-# Model Checkpoints (if any)
-*.pth
-*.pkl
-*.h5
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
